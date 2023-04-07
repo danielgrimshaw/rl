@@ -28,7 +28,7 @@ LEFT = 3
 RIGHT = 4
 
 
-class GridworldEnv:
+class GridworldEnv(gym.Env):
     def __init__(self, max_steps: int = 100) -> None:
         self.initial_grid_state = np.array(
             [
@@ -76,8 +76,8 @@ class GridworldEnv:
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, dict]:
         reward = 0.0
         next_state = (
-            self.agent_state[0] + self.action_pos_dict[action][0],
-            self.agent_state[1] + self.action_pos_dict[action][1],
+            self.agent_state[0] + self.action_pos_dict[int(action)][0],
+            self.agent_state[1] + self.action_pos_dict[int(action)][1],
         )
 
         is_invalid_state = (
@@ -95,11 +95,11 @@ class GridworldEnv:
             self.grid_state[next_state[0], next_state[1]] = AGENT
             self.grid_state[self.agent_state[0], self.agent_state[1]] = EMPTY
             self.agent_state = next_state
-
+            reward = 0.5 / self.max_steps
         elif next_agent_state == WALL:
             reward = -0.1
         elif next_agent_state == GOAL:
-            reward = 1
+            reward = 100
             self.done = True
         elif next_agent_state == BOMB:
             reward = -1
@@ -150,7 +150,7 @@ class GridworldEnv:
         if self.viewer:
             self.viewer.imshow(img)
 
-    def close(self):
+    def close(self) -> None:
         if self.viewer is not None:
             self.viewer.close()
             self.viewer = None
@@ -166,5 +166,9 @@ if __name__ == "__main__":
         obs, _, done, info = env.step(act)
         step += 1
         env.render()
-    print(step)
+        input("enter")
+    input(step)
     env.close()
+
+
+gym.register("Gridworld-v0", entry_point="gridworld.gridworld:GridworldEnv")
